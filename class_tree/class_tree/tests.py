@@ -18,25 +18,70 @@ class StressTestRelatedObject(TestCase):
         self.assertEqual(facility.node.get_descendants().count(), 3050)  # Magic number comes from make_tree cmd
         self.assertEqual(RelatedObject.objects.count(), 120598)
 
-    def test_timing(self):
+    def setUp(self):
+        self.users = list(User.objects.all())
         random.seed(42)
-        users = list(User.objects.all())
 
+    def test_timing(self):
         count = 0
         times = []
         bar = progressbar.ProgressBar()
-        for user in bar(users):
+        for user in bar(self.users):
             start = time.time()
-            _ = list(RelatedObject.all_that_user_has_perms_for(user))  # Force evaluation
+            list(RelatedObject.all_that_user_has_perms_for(user))  # Force evaluation
             end = time.time()
             count += 1
             times.append(end-start)
 
         avg_time = sum(times)/count
+        print('*'*40)
         print("Average time (s) for `class_tree` app's \n\t`RelatedObject.all_that_user_has_perms_for` "
               "method: {}".format(avg_time))
         std_dev = math.sqrt(sum([(t - avg_time)**2 for t in times])/count)
         print("Standard deviation is {}".format(std_dev))
+        print('*'*40)
+
+    def test_user_group_timing(self):
+        count = 0
+        times = []
+        bar = progressbar.ProgressBar()
+        for _ in bar(range(0, len(self.users))):
+            user_group = random.sample(self.users, 100)
+
+            start = time.time()
+            list(RelatedObject.objects.filter(user__in=user_group))  # Force evaluation
+            end = time.time()
+
+            count += 1
+            times.append(end-start)
+
+        avg_time = sum(times)/count
+        print('*'*40)
+        print("Average time (s) for `class_tree` app's \n\t`RelatedObject` "
+              "filtering by User group: {}".format(avg_time))
+        std_dev = math.sqrt(sum([(t - avg_time)**2 for t in times])/count)
+        print("Standard deviation is {}".format(std_dev))
+        print('*'*40)
+
+    def test_single_timing(self):
+        count = 0
+        times = []
+        bar = progressbar.ProgressBar()
+        for user in bar(self.users):
+            start = time.time()
+            list(RelatedObject.objects.filter(user=user))  # Force evaluation
+            end = time.time()
+
+            count += 1
+            times.append(end-start)
+
+        avg_time = sum(times)/count
+        print('*'*40)
+        print("Average time (s) for `class_tree` app's \n\t`RelatedObject` "
+              "filtering by single User: {}".format(avg_time))
+        std_dev = math.sqrt(sum([(t - avg_time)**2 for t in times])/count)
+        print("Standard deviation is {}".format(std_dev))
+        print('*'*40)
 
 
 class TestRelatedObject(TestCase):

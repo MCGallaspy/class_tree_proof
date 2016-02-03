@@ -157,15 +157,50 @@ Related object benchmarking
  
 ```text
 Average time (s) for `natural_tree` app's
-        `RelatedObject.all_that_user_has_perms_for` method: 0.16647429609298706
-Standard deviation is 0.2209921832619154
+        `RelatedObject.all_that_user_has_perms_for` method: 0.056549233436584474
+Standard deviation is 0.07789600979281384
 ```
 
 ```text
 Average time (s) for `class_tree` app's
-        `RelatedObject.all_that_user_has_perms_for` method: 0.013064778327941895
-Standard deviation is 0.011786503008821534
+        `RelatedObject.all_that_user_has_perms_for` method: 0.003861724853515625
+Standard deviation is 0.0026073984298090516
 ```
+
+For comparison, we also timed `RelatedObject.objects.filter(user=some_user)` and 
+`RelatedObject.objects.filter(user__in=some_user_list)`.
+
+```text
+Average time (s) for `class_tree` app's
+        `RelatedObject` filtering by single User: 0.002318774700164795
+Standard deviation is 0.0011306246154338454
+```
+
+```text
+Average time (s) for `class_tree` app's
+        `RelatedObject` filtering by User group: 0.2077094202041626
+Standard deviation is 0.01914051629048124
+```
+
+```text
+Average time (s) for `natural_tree` app's
+        `RelatedObject` filtering by single User: 0.002488992214202881
+Standard deviation is 0.0015102334500349925
+```
+
+```text
+Average time (s) for `natural_tree` app's
+        `RelatedObject` filtering by User group: 0.21173663663864137
+Standard deviation is 0.02103820875502764
+```
+
+For `class_tree` the order of magnitude ratios of `single-user filtering : permission checking` and 
+`single-user filtering : user-list filtering` are `1:1` and `1:100`.
+For `natural_tree` the same ratios are `1:10` and `1:100`.
+
+In other words, the `class_tree` checks permissions at almost the same speed as simply filtering by a single user.
+The `natural_tree` checks permissions about 10x slower than filtering by a single user.
+Both perform comparably when filtering by a list of users.
 
 You can replicate by running the `StressTestRelatedObject` tests found in each module.
 Note these tests take a long time to run (~260s) because there are a large # of related objects in the test fixture.
