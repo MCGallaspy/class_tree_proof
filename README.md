@@ -8,7 +8,7 @@ Then I thought up a solution, so I decided to make a Django app that demonstrate
 
 Read this explanation, look at tests.py, then look at models.py.
 
-Install with this cmd: `pip install -r requirements`.
+Use Python3. Install with this cmd: `pip install -r requirements`.
 
 You can run tests with this script: `manage.py test`.
 
@@ -116,7 +116,10 @@ The app `natural_tree` implements the same solution, but instead of using the mo
 Conclusion from benchmarking
 ------
 
-To my surprise both apps perform comparably for the `User.is_learner_in_class_of` method!
+~~To my surprise both apps perform comparably for the `User.is_learner_in_class_of` method!~~
+
+Double update: @jamalex has cleverly written a more efficient query for the `natural_tree` app, which is about an 
+order of magnitude faster now than `class_tree` for this method.
 
 Update: For the class tree, I realized a constant-time improvement could be achieved by indexing some node fields
 together. Benchmarks below for reference:
@@ -124,28 +127,13 @@ together. Benchmarks below for reference:
 `python manage.py test class_tree.tests.TestBenchmark` **with** changes to indexing:
 ```
 Average time (s) for `class_tree` app's
-        `User.is_learner_in_class_of` method: 0.0015831643199920654
-..
-----------------------------------------------------------------------
-Ran 2 tests in 88.856s
-```
-
-`python manage.py test class_tree.tests.TestBenchmark` **without** changes to indexing:
-```
-Average time (s) for `class_tree` app's
-        `User.is_learner_in_class_of` method: 0.003222175898551941
-..
-----------------------------------------------------------------------
-Ran 2 tests in 189.616s
+        `User.is_learner_in_class_of` method: 0.0015470333576202392
 ```
 
 `python manage.py test natural_tree.tests.TestBenchmark` for comparison:
 ```
 Average time (s) for `natural_tree` app's
-        `User.is_learner_in_class_of` method: 0.0023021783781051637
-..
-----------------------------------------------------------------------
-Ran 2 tests in 122.718s
+        `User.is_learner_in_class_of` method: 0.00010479651927947998
 ```
 
 Related object benchmarking
